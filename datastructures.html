@@ -1,0 +1,155 @@
+<script src="js/sugar.js"></script>
+<script src="js/peg.js"></script>
+<script src="js/plt.js"></script>
+
+<title>Parsing Data Structures</title>
+
+<script type="text/javascript">
+  PLT.refresh = false;
+
+  /*
+     MiniLisp is the name of the language we are designing
+     this is the JavaScript object that will contain all of
+     the functions and data that will make the language work
+  */
+  var MiniLisp = {
+    /*
+      eval is short for evaluate. It is the function that will
+      take as input the parsed array and implement the behavior
+      of the language
+    */
+
+   dictionary: {
+     '+': function(parsed_array){
+	
+	var total = 0;
+	for(var i = 1; i < parsed_array.length; i++){
+	   total += parsed_array[i];
+	};
+	  return total;
+	},
+     'let': function(parsed_array) {
+// (let foo 10)
+        MiniLisp.dictionary[parsed_array[1]] = parsed_array[2];
+      }
+     '-': function(parsed_array){
+	
+
+       }
+
+	}
+
+    eval: function(parsed_array) {
+     	//in order to differentiate between an array to be parsed and a number that needs to be [insert operation]
+	if(typeof parsed_array == "number")
+	   return parsed_array;
+	for(var i = 1; i < parsed_array.length; i++){
+	parsed_array[i] = MiniLisp.eval(parsed_array[i]);
+	};
+	var operator = parsed_array[0];
+
+	if(MiniLisp.dictionary[operator] == undefined){
+	throw new SyntaxError("Unrecognized operator, Joelle!");
+	} else{
+	  var functionFromDictionary = MiniLisp.dictionary[operator];
+	  return fromFromDictionary(parsed_array);
+	}
+
+
+      else if(parsed_array[0] == '-'){
+  	  return parsed_array[1] - parsed_array[2];
+
+	} else if(parsed_array[0] == '*'){
+	  return parsed_array[1] * parsed_array[2];
+
+	} else if(parsed_array[0] == '/'){
+	  return parsed_array[1] / parsed_array[2];
+	} else if(parsed_array[0] == '<'){
+	  return parsed_array[1] < parsed_array[2];
+	} else if(parsed_array[0] == '>'){
+	  return parsed_array[1] > parsed_array[2];
+	} else if(parsed_array[0] == '='){
+	  return parsed_array[1] == parsed_array[2];
+	} else {
+
+/* !!!SCRATCH AREA!!!
+
+TO DO:
+Finish the Dictionary
+fix the sym:operator to allow text operations like "let" "permit"
+
+*/
+      }
+    }
+  }
+</script>
+
+<!--
+
+Full documentation: http://pegjs.majda.cz/documentation#grammar-syntax-and-semantics-parsing-expression-types
+
+'x'   : match the literal character 'x'
+[xyz] : match one of the literal character 'x', 'y', or 'z'
+x+    : match x 1 or more times
+x*    : match x 0 or more times
+x?    : match x 0 or 1 times
+!x    : match anything but the match x
+x/y   : match x or y, trying in that order
+v:x   : assign the result of the match x to the variable v
+
+-->
+
+<grammar>
+  start                         = o:operation { return MiniLisp.eval( o ) }
+
+  operation                     = '(' space op:operator space args:expression+ ')' space { return [ op ].concat(args) }
+  operator                      = sym:[^\(\)\ ]+ {return sym.join('')} <!--excludes parens, space -->
+ <!--  operator                      = [+-\/*\<\>\=] -->
+ <!-- operator                      = '+' / '-' / '/' / '*' -->
+  expression                    = operation / number / operator+
+
+  number                        = d:digit+ space { return parseInt( d.join('') ) }
+  digit                         = [0123456789]
+
+  space                         = [ ]* / !. { return undefined }
+  mandatory_space               = [ ]+ / !. { return undefined }
+</grammar>
+
+
+<h3>These parse into Arrays and MiniLisp.eval evaluates them</h3>
+<code>(+ 1 2)</code>
+<code>(+ 7 13)</code>
+
+<h3>Homework: Make the other operators work</h3>
+<code>(- 1 2)</code>
+<code>(- 7 13)</code>
+<code>(* 1 2)</code>
+<code>(* 7 13)</code>
+<code>(/ 1 2)</code>
+<code>(/ 7 13)</code>
+
+<h3>Homework: Make nesting work</h3>
+<code>(+ 7 (+ 30 5))</code>
+<code>(- 100 (+ 29 29))</code>
+
+<h3>Extra: Make multiple arguments work</h3>
+<code>((+ 20 20 30 40 50)</code>
+<code>(* (- 10 5) (+ 20 20 30 40 50))</code>
+
+<h3>Extra: Make comparisons work</h3>
+<p><em>These should evaluate to true</em></p>
+<code>(< 18 90)</code>
+<code>(> 78 12)</code>
+<code>(= 50 50)</code>
+
+<p><em>These should evaluate to false</em></p>
+<code>(< 5 4)</code>
+<code>(> 100 200)</code>
+<code>(= 50 51)</code>
+
+<h3>Extra: Make conditionals work</h3>
+<p><em>This should evaluate to 5</em></p>
+<code>(if (< 0 8) 5 9)</code>
+
+<p><em>This should evaluate to 9</em></p>
+<code>(if (> 0 8) 5 9)</code>
